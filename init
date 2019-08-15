@@ -1,0 +1,85 @@
+#! /bin/bash
+
+RED=`tput setaf 1`
+GREEN=`tput setaf 2`
+NOCOLOR=`tput sgr0`
+
+if [ -d "$HOME/IOTA_ESP32" ]; then :
+else
+    mkdir "$HOME/IOTA_ESP32"
+fi
+
+DIR=$(cd "$(dirname "$0")"; pwd)
+if [ -d "$HOME/IOTA_ESP32/esp_requirements" ]; then :
+else
+    echo "Copy esp_requirements to \"~/IOTA_ESP32/\"..."
+    cp -R "$DIR/esp_requirements" "$HOME/IOTA_ESP32"
+fi
+
+if [ -d "$HOME/IOTA_ESP32/esp_requirements/esp-idf" ]; then :
+else
+    echo "Cloning ESP-IDF to \"~/IOTA_ESP32/esp_requirements\"..."
+    cd "$HOME/IOTA_ESP32/esp_requirements"
+    git clone --recursive https://github.com/espressif/esp-idf.git
+    cd esp-idf
+    git checkout 6ae352c3a06d2ef2721b94902a069c7d68870102
+fi
+if [ -d "$HOME/IOTA_ESP32/iota_cclient_esp32" ]; then :
+else
+    echo "Cloning iota esp32 simple wallet to \"~/IOTA_ESP32\"..."
+    cd "$HOME/IOTA_ESP32"
+    git clone --recursive https://github.com/Maksym-Pelishko/iota_cclient_esp32.git
+    cd iota_cclient_esp32
+    git checkout iota_simple_wallet    
+fi
+
+echo "Installing pip..."
+sudo easy_install pip
+pip install --user pyserial
+if hash brew; then
+    echo "${GREEN}HomeBrew exist. Installing or upgrade cmake and ninja${NOCOLOR}"
+    if hash cmake; then
+        brew upgrade cmake
+    else
+        brew install cmake
+    fi
+    if hash ninja; then
+        brew upgrade ninja
+    else
+        brew install ninja
+    fi
+else
+    if hash port; then
+        echo "${GREEN}MacPort exist. Installing or upgrade cmake and ninja${NOCOLOR}"
+        if hash cmake; then
+            sudo port upgrade cmake
+        else
+            sudo port install cmake
+        fi
+        if hash ninja; then
+            sudo port upgrade ninja
+        else
+            sudo port install ninja
+        fi
+    else
+        echo "${RED}Error: can't install cmake and ninja${NOCOLOR}"
+        exit -1
+    fi
+fi
+
+if hash idf.py; then
+    python -m pip install --user -r $IDF_PATH/requirements.txt
+else
+    {
+        echo "export PATH=\$HOME/IOTA_ESP32/esp_requirements/xtensa-esp32-elf/bin:\$PATH"
+        echo "export IDF_PATH=~/IOTA_ESP32/esp_requirements/esp-idf"
+        echo "export PATH=\"\$IDF_PATH/tools:\$PATH\""
+    } > ~/.profile
+
+    echo "${GREEN}OK. Please, log out and log in, to setup global variables. Then, run this script again to install required python packages${NOCOLOR}"
+    exit 0
+fi
+
+cd "$HOME/IOTA_ESP32/iota_cclient_esp32"
+bash ./init.sh
+echo "${GREEN}Successfully inited. Go to ~/IOTA_ESP32/iota_cclient_esp32 directory and run \"config\" file.${NOCOLOR}"
