@@ -28,7 +28,7 @@ if [ -d "$HOME/IOTA_ESP32/iota_cclient_esp32" ]; then :
 else
     echo "Cloning iota esp32 simple wallet to \"~/IOTA_ESP32\"..."
     cd "$HOME/IOTA_ESP32"
-    git clone --recursive https://github.com/Maksym-Pelishko/iota_cclient_esp32.git
+    git clone --recursive https://github.com/magnisinfo/iota_cclient_esp32.git
     cd iota_cclient_esp32
     git checkout iota_simple_wallet    
 fi
